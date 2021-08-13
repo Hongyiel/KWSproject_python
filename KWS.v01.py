@@ -221,12 +221,12 @@ class CLASS_FULLY_CONNECTED:
 
 class CLASS_KWS_NETWORK:
   def __init__(self, input_dim, output_dim,hidden_dim, number_of_hidden_layers, activation="ReLU"):
-    self.layers = [CLASS_CNN(input_dim, hidden_dim)]
+    self.layers = [CLASS_CONV(input_dim, hidden_dim)]
     self.layers.append(CLASS_ReLU())
     for i in range(number_of_hidden_layers):
-      self.layers.append(CLASS_D_CNN(hidden_dim, hidden_dim))
+      self.layers.append(CLASS_D_CONV(hidden_dim, hidden_dim))
       self.layers.append(CLASS_ReLU())
-      self.layers.append(CLASS_P_CNN(hidden_dim, hidden_dim))
+      self.layers.append(CLASS_P_CONV(hidden_dim, hidden_dim))
       self.layers.append(CLASS_ReLU())
     self.layers.append(CLASS_AVG_POOLING())
     self.layers.append(CLASS_FULLY_CONNECTED())

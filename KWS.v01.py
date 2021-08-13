@@ -36,8 +36,13 @@ def main():
 
   # Build a network with input feature dimensions, output feature dimension,
   # hidden dimension, and number of layers as specified below
-  kws_network = CLASS_KWS_NETWORK(X_train.shape[1],Y_train,number_of_hidden_layers,activation=activation)
+  
+  # input parameter (#### ERROR found ####)
+  kws_network = CLASS_KWS_NETWORK(X_train.shape[1], Y_train, number_of_hidden_layers,number_of_hidden_lnodes,activation=activation)
 
+  
+  
+  
   # Some lists for book-keeping for plotting later
   train_losses = []
   train_accs = []
@@ -140,8 +145,8 @@ class CLASS_CONV:
 class CLASS_D_CONV:
   def __init__(self, input_dim, output_dim):
     # WOON - need to make sure the rati of weight
-    self.weights = np.random.randn(input_dim, output_dim)*4*10
-    self.bias = np.ones( (1,output_dim) )*0.5
+    self.weights = np.random.randn(input_dim, output_dim)*3*3
+    self.bias = np.ones( (1,output_dim) )
 
   # During the forward pass, we simply compute Xw+b
   def forward(self, input):

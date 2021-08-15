@@ -20,7 +20,7 @@ def main():
     # TEST INPUT
     kws_network = CLASS_KWS_NETWORK()
     # start_matrix = np.random.randint(9, size=(49, 11)) + 1
-    start_matrix = np.ones((49, 11))
+    start_matrix = np.ones((49, 10))
     result_matrix = kws_network.forward(start_matrix)
     print("result matrix[0]: \n", result_matrix[0])
     print("result matrix[1]: \n", result_matrix[1])
@@ -47,7 +47,7 @@ class CLASS_CONV:
     def forward(self, input):
         print("CNV")
         # Padding applied
-        self.input = np.pad(input, ((4, 4), (1, 1)),
+        self.input = np.pad(input, ((4, 5), (1, 1)),
                             'constant', constant_values=0)
         print("Padded matrix: \n", self.input)
         print("width: ", self.input.shape[1])
@@ -60,7 +60,7 @@ class CLASS_CONV:
         input_width = self.input.shape[1]
 
         # Shape of Output Convolution
-        output_width = 6
+        output_width = 5
         output_height = 25
         output_matrix = np.zeros(
             (self.kernel_count, output_height, output_width))
@@ -125,7 +125,7 @@ class CLASS_D_CONV:
         print("D-CNV")
         print("Input: \n", input[0])
         # Padding applied
-        self.input = np.zeros((input.shape[0], 27, 8))
+        self.input = np.zeros((input.shape[0], 27, 7))
         for i in range(input.shape[0]):
             self.input[i] = np.pad(
                 input[i], ((1, 1), (1, 1)), 'constant', constant_values=0)
@@ -140,7 +140,7 @@ class CLASS_D_CONV:
         input_height = self.input[0].shape[0]
 
         # Shape of Output Convolution
-        output_width = 6
+        output_width = 5
         output_height = 25
         output_matrix = np.zeros(
             (self.kernel_count, output_height, output_width))
@@ -206,10 +206,9 @@ class CLASS_P_CONV:
         print("P_cnn: Input: \n", input[0])
         
         # Padding applied
-        self.input = np.zeros((input.shape[0], 27, 8))
+        self.input = np.zeros((input.shape[0], 25, 5))
         for i in range(input.shape[0]):
-            self.input[i] = np.pad(
-                input[i], ((1, 1), (1, 1)), 'constant', constant_values=0)
+            self.input[i] = input[i]
         print("Padded matrix: \n", self.input[0])
         print("width: ", self.input[0].shape[1])
         print("height: ", self.input[0].shape[0])
@@ -224,7 +223,7 @@ class CLASS_P_CONV:
         input_height = self.input[0].shape[0]
 
         # Shape of Output Convolution
-        output_width = 6
+        output_width = 5
         output_height = 25
         output_matrix = np.zeros(
             (self.kernel_count, output_height, output_width))

@@ -120,6 +120,7 @@ class CLASS_CONV:
     def __init__(self, input_dim, output_dim):
         # WOON - need to make sure the rati of weight
         self.weights = np.random.randn(input_dim, output_dim)*4*10
+        # Reduced size of byte since bias doesn't have to be large
         self.bias = np.ones((1, output_dim))*0.5
 
     # During the forward pass, we simply compute Xw+b

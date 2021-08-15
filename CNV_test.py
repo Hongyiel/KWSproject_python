@@ -59,7 +59,7 @@ class CLASS_CONV:
     output_matrix = np.zeros((self.kernel_count, output_height, output_width))
 
     # Iterate through image
-    for i in range(1):
+    for i in range(self.kernel_count):
       for y in range(input_height):
           # Exit Convolution
           if y > input_height - kernel_height:
@@ -73,7 +73,6 @@ class CLASS_CONV:
                   
                   # Only Convolve if x has moved by the specified Strides
                   if x % self.strides == 0:
-                      print("x: ", x)
                       try:
                           output_y = int(np.floor(y/self.strides))
                           output_x = int(np.floor(x/self.strides))

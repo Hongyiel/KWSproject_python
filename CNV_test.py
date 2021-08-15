@@ -188,15 +188,78 @@ class CLASS_D_CONV:
 
 
 class CLASS_P_CONV:
-    def __init__(self, input_dim, output_dim):
-        # WOON - need to make sure the rati of weight
-        self.weights = np.random.randn(input_dim, output_dim)*4*10
-        self.bias = np.ones((1, output_dim))*0.5
+    def __init__(self):
+        # Array of Kernel Matrix
+        self.kernel_count = 64
+        self.kernel = np.zeros((self.kernel_count, 64))
+        for i in range(self.kernel_count):
+            #self.kernel[i] = np.random.randint(9, size=(3, 3)) + 1
+            self.kernel[i] = 1
+        print("kernel matrix[0]: \n", self.kernel[0])
+
+        self.strides = 1
+        # self.bias = np.ones( (1,output_dim) )*0.5
 
     # During the forward pass, we simply compute Xw+b
     def forward(self, input):
-        self.input = input
-        return self.input@self.weights + self.bias
+        print("P-CNV")
+        print("P_cnn: Input: \n", input[0])
+        
+        # Padding applied
+        self.input = np.zeros((input.shape[0], 27, 8))
+        for i in range(input.shape[0]):
+            self.input[i] = np.pad(
+                input[i], ((1, 1), (1, 1)), 'constant', constant_values=0)
+        print("Padded matrix: \n", self.input[0])
+        print("width: ", self.input[0].shape[1])
+        print("height: ", self.input[0].shape[0])
+
+        # Gather Shapes of Kernel + Image + Padding
+        # Pointwise changed
+        kernel_width = 1
+        kernel_height = 1
+        
+        
+        input_width = self.input[0].shape[1]
+        input_height = self.input[0].shape[0]
+
+        # Shape of Output Convolution
+        output_width = 6
+        output_height = 25
+        output_matrix = np.zeros(
+            (self.kernel_count, output_height, output_width))
+
+        # Iterate through image
+        # i is first layer
+        # i is number of kernel
+        for i in range(self.kernel_count):
+          # kernel 64
+            for y in range(input_height):
+                # Exit Convolution
+                if y > input_height - kernel_height:
+                    break
+                # Only Convolve if y has gone down by the specified Strides
+                if y % self.strides == 0:
+                    for x in range(input_width):
+                        # Go to next row once kernel is out of bounds
+                        if x > input_width - kernel_width:
+                            break
+
+                        # Only Convolve if x has moved by the specified Strides
+                        if x % self.strides == 0:
+                            try:
+                                output_y = int(np.floor(y/self.strides))
+                                output_x = int(np.floor(x/self.strides))
+                                #  0 1 2 3 ... 
+                                
+                                # calculation part
+                                for j in range(input.shape[0]):
+                                  output_matrix[i][output_y, output_x] += input[j][y,x] * self.kernel[i][j]
+                                  
+                            except:
+                                break
+
+        return output_matrix
 
     def backward(self, grad):
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
@@ -248,6 +311,9 @@ class CLASS_KWS_NETWORK:
         self.layers = [CLASS_CONV()]
         self.layers.append(CLASS_ReLU())
         self.layers.append(CLASS_D_CONV())
+        self.layers.append(CLASS_ReLU())
+        
+        self.layers.append(CLASS_P_CONV())
         self.layers.append(CLASS_ReLU())
         """
     for i in range(number_of_hidden_layers):

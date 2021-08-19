@@ -282,7 +282,20 @@ class CLASS_P_CONV:
 class CLASS_AVG_POOLING:
     # Forward pass is max(0,input)
     def forward(self, input):
-        return np.sum(input)/np.total_number(input)
+        # 5 x 25
+        input_avg_pool = np.zeros(64)
+        print("This is area of AVG Pooling")
+        for i in range(input.shape[0]):
+          print("This is array: ", np.array(input[i]))
+          print("This is sum of input: ", np.sum(input[i]))
+          print("This is size of area: ", np.size(input[i]))
+          input_avg_pool[i] = (np.sum(input[i])/np.size(input[i]))
+        # print("This is array: ", np.array(input))
+        # print("This is sum of input: ", np.sum(input))
+        # print("This is size of area: ", np.size(input))
+        # input_avg_pool = np.sum(input)/np.size(input)
+        print("This is avg_pool: ", np.array(input_avg_pool))
+        return input_avg_pool
     # Backward pass masks out same elements
 
     def backward(self, grad):
@@ -317,15 +330,15 @@ class CLASS_KWS_NETWORK:
         
         self.layers.append(CLASS_P_CONV())
         self.layers.append(CLASS_ReLU())
-        """
-    for i in range(number_of_hidden_layers):
-      self.layers.append(CLASS_D_CONV(hidden_dim, hidden_dim))
-      self.layers.append(CLASS_ReLU())
-      self.layers.append(CLASS_P_CONV(hidden_dim, hidden_dim))
-      self.layers.append(CLASS_ReLU())
-    self.layers.append(CLASS_AVG_POOLING())
-    self.layers.append(CLASS_FULLY_CONNECTED()) 
-    """
+        
+        # for i in range(number_of_hidden_layers):
+        #   self.layers.append(CLASS_D_CONV(hidden_dim, hidden_dim))
+        #   self.layers.append(CLASS_ReLU())
+        #   self.layers.append(CLASS_P_CONV(hidden_dim, hidden_dim))
+        #   self.layers.append(CLASS_ReLU())
+        self.layers.append(CLASS_AVG_POOLING())
+        # self.layers.append(CLASS_FULLY_CONNECTED()) 
+        
 
     def forward(self, X):
         for layer in self.layers:

@@ -20,8 +20,10 @@ def main():
     # TEST INPUT
     kws_network = CLASS_KWS_NETWORK()
     # start_matrix = np.random.randint(9, size=(49, 11)) + 1
+    # NCHW
     start_matrix = np.ones((49, 10))
     result_matrix = kws_network.forward(start_matrix)
+    # kws.network.backward(///)
     print("result matrix[0]: \n", result_matrix[0])
     print("result matrix[1]: \n", result_matrix[1])
     print("result matrix[2]: \n", result_matrix[2])
@@ -253,7 +255,7 @@ class CLASS_P_CONV:
                                 
                                 # calculation part
                                 for j in range(input.shape[0]):
-                                  output_matrix[i][output_y, output_x] += input[j][y,x] * self.kernel[i][j]
+                                  output_matrix[i][output_y, output_x] += self.input[j][y,x] * self.kernel[i][j]
                                   
                             except:
                                 break
@@ -309,6 +311,7 @@ class CLASS_KWS_NETWORK:
     def __init__(self):
         self.layers = [CLASS_CONV()]
         self.layers.append(CLASS_ReLU())
+
         self.layers.append(CLASS_D_CONV())
         self.layers.append(CLASS_ReLU())
         

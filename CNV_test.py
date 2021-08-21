@@ -1,4 +1,7 @@
 import numpy as np
+import os.path
+import sys
+import librosa  # for audio related library using
 
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
 np.random.seed(102)

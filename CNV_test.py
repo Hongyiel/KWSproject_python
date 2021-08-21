@@ -8,6 +8,7 @@ np.random.seed(102)
 step_size = 0.001
 batch_size = 10000
 max_epochs = 1000
+np.set_printoptions(precision=3)
 
 # GLOBAL PARAMETERS FOR NETWORK ARCHITECTURE
 # input 1:    11x49x1 --> conv 4x10/2                   --> 6x25x64
@@ -23,29 +24,30 @@ activation = "ReLU"
 wav_file = "go_nohash_0.wav"
 n_mfcc = 49
 n_mels = 10
-n_fft = 640 ## 512 
-win_length = 640 # 160
-hop_length = 320 # 160
+n_fft = 640  # 512
+win_length = 640  # 160
+hop_length = 320  # 160
 fmin = 20
 fmax = 4000
 sr = 16000
 # how to call data from librosa
 # y, sr = librosa.load(librosa.ex('trumpet'))
-audio_data, sr = librosa.load(wav_file, sr=sr) # , offset=0.04, duration=1.0)
-print('---audio_sr:',sr)
-print('---audio_data:',audio_data.shape)
+audio_data, sr = librosa.load(wav_file, sr=sr)  # , offset=0.04, duration=1.0)
+print('---audio_sr:', sr)
+print('---audio_data:', audio_data.shape)
 audio_np = np.array(audio_data, np.float32)
 print('audio_np:', audio_np.shape)
 
 mfcc_librosa = librosa.feature.mfcc(y=audio_data, sr=sr,
                                     win_length=win_length, hop_length=hop_length,
-                                    center=False, # it will be start FFT from begins at y[t* hop_length]
+                                    # it will be start FFT from begins at y[t* hop_length]
+                                    center=False,
                                     n_fft=n_fft,
                                     n_mfcc=n_mfcc, n_mels=n_mels,
                                     fmin=fmin, fmax=fmax, htk=False
-                                   )
+                                    )
 # mfcc_librosa is the data that consist of 49 x 10 matrix
-print('mfcc_librosa',mfcc_librosa.shape) 
+print('mfcc_librosa', mfcc_librosa.shape)
 
 ##########################################################
 
@@ -93,7 +95,7 @@ class CLASS_CONV:
         # Print function
         print("CNV kernel matrix[0]: \n", self.kernel[0])
 
-        # self.bias = np.ones( (1,output_dim) )*0.5
+        self.bias = np.ones((self.kernel_count, 1, 1))*0.5
 
     def forward(self, input):
         print("\n\n\n-----------CNV-----------")
@@ -139,10 +141,10 @@ class CLASS_CONV:
                             except:
                                 break
 
-        print("Output matrix[0]: \n", output_matrix[0])
+        print("\nOutput matrix[0]: \n", output_matrix[0])
         print("width: ", output_matrix[0].shape[1])
         print("height: ", output_matrix[0].shape[0])
-        return output_matrix
+        return output_matrix + self.bias
 
     def backward(self, grad):
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
@@ -180,7 +182,7 @@ class CLASS_D_CONV:
         # Print Function
         print("D-CNV kernel matrix[0]: \n", self.kernel[0])
 
-        # self.bias = np.ones( (1,output_dim) )*0.5
+        self.bias = np.ones((self.kernel_count, 1, 1))*0.5
 
     def forward(self, input):
         print("\n\n\n-----------D-CNV-----------")
@@ -228,10 +230,10 @@ class CLASS_D_CONV:
                             except:
                                 break
 
-        print("Output matrix[0]: \n", output_matrix[0])
+        print("\nOutput matrix[0]: \n", output_matrix[0])
         print("width: ", output_matrix[0].shape[1])
         print("height: ", output_matrix[0].shape[0])
-        return output_matrix
+        return output_matrix + self.bias
 
     def backward(self, grad):
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
@@ -267,7 +269,7 @@ class CLASS_P_CONV:
         # Print function
         print("P-CNV kernel matrix[0]: \n", self.kernel[0])
 
-        # self.bias = np.ones( (1,output_dim) )*0.5
+        self.bias = np.ones((self.kernel_count, 1, 1))*0.5
 
     def forward(self, input):
         print("\n\n\n-----------P-CNV-----------")
@@ -322,10 +324,10 @@ class CLASS_P_CONV:
                             except:
                                 break
 
-        print("Output matrix[0]: \n", output_matrix[0])
+        print("\nOutput matrix[0]: \n", output_matrix[0])
         print("width: ", output_matrix[0].shape[1])
         print("height: ", output_matrix[0].shape[0])
-        return output_matrix
+        return output_matrix + self.bias
 
     def backward(self, grad):
         #   dL/d_input = (dL/d_output) * (d_output/d_input)

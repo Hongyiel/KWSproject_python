@@ -307,9 +307,14 @@ class CLASS_AVG_POOLING:
 
 
 class CLASS_FULLY_CONNECTED:
+    def __init__(self):
+        self.input = None
+        self.weights = np.random.rand(64, 12)
+        self.bias = np.random.rand(1, 12)
     # Forward pass is max(0,input)
     def forward(self, input):
-        return  # calculate 64 to 10
+        self.input = input        
+        return np.dot(self.input, self.weights) + self.bias # calculate 64 to 10
     # Backward pass masks out same elements
 
     def backward(self, grad):

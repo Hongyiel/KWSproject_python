@@ -62,15 +62,15 @@ def main():
     # Compute the scores for our 10 classes using our model
     result = kws_network.forward(start_matrix)
 
-    # loss = lossFunc.forward(result, traindata)
-    # # accuracy
-    # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
-    # # Compute gradient of Cross-Entropy Loss with respect to logits
-    # loss_grad = lossFunc.backward()
-    # # Pass gradient back through networks
-    # kws_network.backward(loss_grad)
-    # # Take a step of gradient descent
-    # kws_network.step(step_size)
+    loss = lossFunc.forward(result, traindata)
+    # accuracy
+    acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
+    # Compute gradient of Cross-Entropy Loss with respect to logits
+    loss_grad = lossFunc.backward()
+    # Pass gradient back through networks
+    kws_network.backward(loss_grad)
+    # Take a step of gradient descent
+    kws_network.step(step_size)
 
     print("\n\n\n-----------RESULT-----------")
     print("Result: \n", result)
@@ -150,7 +150,7 @@ class CLASS_CONV:
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
         #                          where (d_output/d_input) = wT
         #
-        grad_input = grad@np.transpose(self.weights)
+        grad_input = grad@np.transpose(self.kernel)
         # compute gradient w.r.t. weights and biases
         # dL/dW = (input)T * (dL/d_Z)
         # dL/dB = Sum of (dL/dZ)
@@ -159,7 +159,7 @@ class CLASS_CONV:
         return grad_input
 
     def step(self, step_size):
-        self.weights -= step_size * self.grad_weights
+        self.kernel -= step_size * self.grad_weights
         self.bias -= step_size * self.grad_bias
 
 
@@ -239,7 +239,7 @@ class CLASS_D_CONV:
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
         #                          where (d_output/d_input) = wT
         #
-        grad_input = grad@np.transpose(self.weights)
+        grad_input = grad@np.transpose(self.kernel)
         # compute gradient w.r.t. weights and biases
         # dL/dW = (input)T * (dL/d_Z)
         # dL/dB = Sum of (dL/dZ)
@@ -248,7 +248,7 @@ class CLASS_D_CONV:
         return grad_input
 
     def step(self, step_size):
-        self.weights -= step_size * self.grad_weights
+        self.kernel -= step_size * self.grad_weights
         self.bias -= step_size * self.grad_bias
 
 
@@ -333,7 +333,7 @@ class CLASS_P_CONV:
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
         #                          where (d_output/d_input) = wT
         #
-        grad_input = grad@np.transpose(self.weights)
+        grad_input = grad@np.transpose(self.kernel)
         # compute gradient w.r.t. weights and biases
         # dL/dW = (input)T * (dL/d_Z)
         # dL/dB = Sum of (dL/dZ)
@@ -342,7 +342,7 @@ class CLASS_P_CONV:
         return grad_input
 
     def step(self, step_size):
-        self.weights -= step_size * self.grad_weights
+        self.kernel -= step_size * self.grad_weights
         self.bias -= step_size * self.grad_bias
 
 
@@ -369,14 +369,14 @@ class CLASS_AVG_POOLING:
 
 class CLASS_FULLY_CONNECTED:
     def __init__(self):
-        self.weights = np.random.rand(64, 12)
+        self.kernel = np.random.rand(64, 12)
         self.bias = np.random.rand(1, 12)
     # Forward pass is max(0,input)
 
     def forward(self, input):
         self.input = input
         # calculate 64 to 10
-        return np.dot(self.input, self.weights) + self.bias
+        return np.dot(self.input, self.kernel) + self.bias
     # Backward pass masks out same elements
 
     def backward(self, grad):

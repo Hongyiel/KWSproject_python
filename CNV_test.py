@@ -4,7 +4,7 @@ import sys
 import librosa  # for audio related library using
 
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
-np.random.seed(102)
+# np.random.seed(102)
 step_size = 0.001
 batch_size = 10000
 max_epochs = 1000
@@ -56,8 +56,8 @@ def main():
     # TEST INPUT
     kws_network = CLASS_KWS_NETWORK()
     lossFunc = CLASS_CrossEntropySoftmax()
-    # start_matrix = np.random.randint(9, size=(49, 11)) + 1
-    start_matrix = np.random.randn(49, 10)
+
+    start_matrix = np.transpose(mfcc_librosa)
 
     # Compute the scores for our 10 classes using our model
     result = kws_network.forward(start_matrix)
@@ -103,10 +103,10 @@ class CLASS_CONV:
         self.input = np.pad(input, ((4, 5), (1, 1)),
                             'constant', constant_values=0)
 
-        # Print function
-        print("Input matrix: \n", self.input)
-        print("width: ", self.input.shape[1])
-        print("height: ", self.input.shape[0])
+        # Print function (Suppressed normally due to size)
+        #print("Input matrix: \n", self.input)
+        #print("width: ", self.input.shape[1])
+        #print("height: ", self.input.shape[0])
 
         # Input information
         input_width = self.input.shape[1]

@@ -61,16 +61,17 @@ def main():
 
     # Compute the scores for our 10 classes using our model
     result = kws_network.forward(start_matrix)
+    traindata = []
 
-    loss = lossFunc.forward(result, traindata)
-    # accuracy
-    acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
-    # Compute gradient of Cross-Entropy Loss with respect to logits
-    loss_grad = lossFunc.backward()
-    # Pass gradient back through networks
-    kws_network.backward(loss_grad)
-    # Take a step of gradient descent
-    kws_network.step(step_size)
+    # loss = lossFunc.forward(result, traindata)
+    # # accuracy
+    # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
+    # # Compute gradient of Cross-Entropy Loss with respect to logits
+    # loss_grad = lossFunc.backward()
+    # # Pass gradient back through networks
+    # kws_network.backward(loss_grad)
+    # # Take a step of gradient descent
+    # kws_network.step(step_size)
 
     print("\n\n\n-----------RESULT-----------")
     print("Result: \n", result)
@@ -84,13 +85,14 @@ class CLASS_CONV:
         self.kernel_height = 10
         self.strides = 2
 
-        # Initialize the kernel array
-        self.kernel = np.zeros(
-            (self.kernel_count, self.kernel_height, self.kernel_width))
-        # Assign random filter value
-        for i in range(self.kernel_count):
-            self.kernel[i] = np.random.randn(
-                self.kernel_height, self.kernel_width)
+        # # Initialize the kernel array
+        # self.kernel = np.zeros(
+        #     (self.kernel_count, self.kernel_height, self.kernel_width))
+        # # Assign random filter value
+        # for i in range(self.kernel_count):
+        #     self.kernel[i] = np.random.randn(
+        #         self.kernel_height, self.kernel_width)
+        self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
 
         # Print function
         print("CNV kernel matrix[0]: \n", self.kernel[0])
@@ -171,13 +173,15 @@ class CLASS_D_CONV:
         self.kernel_height = 3
         self.strides = 1
 
-        # Initialize the kernel array
-        self.kernel = np.zeros(
-            (self.kernel_count, self.kernel_height, self.kernel_width))
-        # Assign random filter value
-        for i in range(self.kernel_count):
-            self.kernel[i] = np.random.randn(
-                self.kernel_height, self.kernel_width)
+        # # Initialize the kernel array
+        # self.kernel = np.zeros(
+        #     (self.kernel_count, self.kernel_height, self.kernel_width))
+        # # Assign random filter value
+        # for i in range(self.kernel_count):
+        #     self.kernel[i] = np.random.randn(
+        #         self.kernel_height, self.kernel_width)
+
+        self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
 
         # Print Function
         print("D-CNV kernel matrix[0]: \n", self.kernel[0])
@@ -261,10 +265,12 @@ class CLASS_P_CONV:
         self.strides = 1
 
         # Initialize the kernel array
-        self.kernel = np.zeros((self.kernel_count, 64))
+        #self.kernel = np.zeros((self.kernel_count, 64))
+
         # Assign random filter value
-        for i in range(self.kernel_count):
-            self.kernel[i] = np.random.randn()
+        # for i in range(self.kernel_count):
+        #     self.kernel[i] = np.random.randn(1)
+        self.kernel = np.random.randn(self.kernel_count, 64)
 
         # Print function
         print("P-CNV kernel matrix[0]: \n", self.kernel[0])
@@ -391,18 +397,11 @@ class CLASS_KWS_NETWORK:
     def __init__(self):
         self.layers = [CLASS_CONV()]
         self.layers.append(CLASS_ReLU())
-
-        self.layers.append(CLASS_D_CONV())
-        self.layers.append(CLASS_ReLU())
-
-        self.layers.append(CLASS_P_CONV())
-        self.layers.append(CLASS_ReLU())
-
-        # for i in range(number_of_hidden_layers):
-        #   self.layers.append(CLASS_D_CONV(hidden_dim, hidden_dim))
-        #   self.layers.append(CLASS_ReLU())
-        #   self.layers.append(CLASS_P_CONV(hidden_dim, hidden_dim))
-        #   self.layers.append(CLASS_ReLU())
+        for i in range(number_of_hidden_layers):
+          self.layers.append(CLASS_D_CONV())
+          self.layers.append(CLASS_ReLU())
+          self.layers.append(CLASS_P_CONV())
+          self.layers.append(CLASS_ReLU())
         self.layers.append(CLASS_AVG_POOLING())
         self.layers.append(CLASS_FULLY_CONNECTED())
 

@@ -61,9 +61,9 @@ def main():
 
     # Compute the scores for our 10 classes using our model
     result = kws_network.forward(start_matrix)
-    traindata = []
+    # traindata = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    # loss = lossFunc.forward(result, traindata)
+    # loss = lossFunc.forward(result[0], traindata)
     # # accuracy
     # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
     # # Compute gradient of Cross-Entropy Loss with respect to logits

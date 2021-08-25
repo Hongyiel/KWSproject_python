@@ -49,6 +49,12 @@ mfcc_librosa = librosa.feature.mfcc(y=audio_data, sr=sr,
 # mfcc_librosa is the data that consist of 49 x 10 matrix
 print('mfcc_librosa', mfcc_librosa.shape)
 
+# If data directory is "dog" then get 0 
+# If data directory is "cat" tjem get 1
+# ...
+# this is how the data set from training file(Answer sheet)
+
+
 ##########################################################
 
 

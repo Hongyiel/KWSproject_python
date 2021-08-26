@@ -3,6 +3,26 @@ import numpy as np
 import os.path
 import sys
 import librosa  # for audio related library using
+from os import listdir
+from os.path import isfile, join
+
+onlyfiles = [f for f in listdir("C:\Users\User\Documents\GitHub\KWSproject_python") if isfile(join("C:\Users\User\Documents\GitHub\KWSproject_python", f))]
+from os import walk
+
+
+
+# get wav file from system OS
+
+# packaging the file matrix to 49 x 10 x 1 for original statement
+
+# distinguish the answer through the file direction that from the system input
+
+# export format in csv file (IMPORTANT:: format should to in line 490 x (number of files))
+
+f = []
+for (dirpath, dirnames, filenames) in walk("C:\Users\User\Documents\GitHub\KWSproject_python"):
+    f.extend(filenames)
+
 
 wav_file = "go_nohash_0.wav"
 n_mfcc = 49

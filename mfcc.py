@@ -44,7 +44,7 @@ def merge_matrix(wav_matrix):
     return new_matrix
 
 # get wav file from system OS
-files = [f for f in os.listdir('/Users/hongyielsuh/Documents/GitHub/KWSproject_python/go') if os.path.isfile(f)]
+files = [f for f in os.listdir('/Users/hongyielsuh/Documents/GitHub/KWSproject_python') if os.path.isfile(f)]
 
 #/Users/hongyielsuh/Desktop/speech_dataset/speech_commands_test_set_v0.02
 

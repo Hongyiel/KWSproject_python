@@ -13,3 +13,8 @@ Link that found
 - mathplot
 - numpy
 
+** Optional installing when running merged_csv.py
+- pandas
+    - pip install pandas
+
+** Please use csv files after extract from speech data 

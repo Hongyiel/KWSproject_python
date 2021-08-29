@@ -2,6 +2,9 @@ import numpy as np
 import os.path
 import sys
 import librosa  # for audio related library using
+import csv
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
 
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
 # np.random.seed(102)
@@ -19,29 +22,87 @@ number_of_hidden_layers = 4
 number_of_hidden_lnodes = 64  # only for layer > 1
 activation = "ReLU"
 
+#################### Audio Data Area ####################
+
+wav_file = "go_nohash_0.wav"
+n_mfcc = 49
+n_mels = 10
+n_fft = 640  # 512
+win_length = 640  # 160
+hop_length = 320  # 160
+fmin = 20
+fmax = 4000
+sr = 16000
+# how to call data from librosa
+# y, sr = librosa.load(librosa.ex('trumpet'))
+audio_data, sr = librosa.load(wav_file, sr=sr)  # , offset=0.04, duration=1.0)
+print('---audio_sr:', sr)
+print('---audio_data:', audio_data.shape)
+audio_np = np.array(audio_data, np.float32)
+print('audio_np:', audio_np.shape)
+
+mfcc_librosa = librosa.feature.mfcc(y=audio_data, sr=sr,
+                                    win_length=win_length, hop_length=hop_length,
+                                    # it will be start FFT from begins at y[t* hop_length]
+                                    center=False,
+                                    n_fft=n_fft,
+                                    n_mfcc=n_mfcc, n_mels=n_mels,
+                                    fmin=fmin, fmax=fmax, htk=False
+                                    )
+# mfcc_librosa is the data that consist of 49 x 10 matrix
+print('mfcc_librosa', mfcc_librosa.shape)
+
+# If data directory is "dog" then get 0 
+# If data directory is "cat" tjem get 1
+# ...
+# this is how the data set from training file(Answer sheet)
+
+
+##########################################################
+random_A = np.random.randn(1, 64, 10, 4).astype('float32')
+random_B = np.random.randn(1, 64, 3, 3).astype('float32')
+# random_B = np.ones((1, 64, 3, 3)).astype('float32')
+# 64x of 64 (1, 1)
+random_C = np.random.randn(64, 64, 1, 1).astype('float32')
+# random_C = np.ones((64, 64, 1, 1)).astype('float32')
+
+
 def main():
     # TEST INPUT
     kws_network = CLASS_KWS_NETWORK()
     lossFunc = CLASS_CrossEntropySoftmax()
 
-    start_matrix = np.ones((49, 10))
-
+    start_matrix = np.transpose(mfcc_librosa)
     # Compute the scores for our 10 classes using our model
     result = kws_network.forward(start_matrix)
-    # traindata = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-    # loss = lossFunc.forward(result[0], traindata)
-    # # accuracy
-    # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
-    # # Compute gradient of Cross-Entropy Loss with respect to logits
-    # loss_grad = lossFunc.backward()
-    # # Pass gradient back through networks
-    # kws_network.backward(loss_grad)
-    # # Take a step of gradient descent
-    # kws_network.step(step_size)
 
     print("\n\n\n-----------RESULT-----------")
     print("Result: \n", result)
+
+
+    ### TENSORFLOW TEST ###
+    conv_filter = tf.transpose(tf.convert_to_tensor(random_A), [2, 3, 0, 1])
+    # conv_filter = tf.ones((10, 4, 1, 64))
+
+    depth_filter = tf.transpose(tf.convert_to_tensor(random_B), [2, 3, 1, 0])
+    # depth_filter = tf.ones((3, 3, 64, 1))
+
+    point_filter = tf.transpose(tf.convert_to_tensor(random_C), [2, 3, 1, 0])
+    # point_filter = tf.ones((1, 1, 64, 64))
+
+    input = tf.reshape(tf.convert_to_tensor(start_matrix), [1, 49, 10, 1])
+    input1 = tf.keras.layers.ZeroPadding2D(padding=((4, 5), (1, 1)))(input)
+    output1 = tf.nn.conv2d(input1, conv_filter, strides=[
+                          1, 2, 2, 1], padding='VALID', data_format='NHWC')
+    input2 = tf.nn.relu(output1)
+    output2 = tf.nn.separable_conv2d(input2, depth_filter, point_filter, strides=[
+                                    1, 1, 1, 1], padding='SAME', data_format='NHWC')
+    input3 = tf.nn.relu(output2)
+    print("Result2: \n", input3.numpy())
+
+    ### TENSORFLOW TEST END ###
+
+    
 
 
 class CLASS_CONV:
@@ -59,8 +120,8 @@ class CLASS_CONV:
         # for i in range(self.kernel_count):
         #     self.kernel[i] = np.random.randn(
         #         self.kernel_height, self.kernel_width)
-        self.kernel = np.ones((self.kernel_count, self.kernel_height, self.kernel_width))
-
+        self.kernel = random_A[0]
+        # self.kernel = np.ones((self.kernel_count, self.kernel_height, self.kernel_width))
         # Print function
         print("CNV kernel matrix[0]: \n", self.kernel[0])
 
@@ -148,7 +209,8 @@ class CLASS_D_CONV:
         #     self.kernel[i] = np.random.randn(
         #         self.kernel_height, self.kernel_width)
 
-        self.kernel = np.ones((self.kernel_count, self.kernel_height, self.kernel_width))
+        # self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
+        self.kernel = random_B[0]
 
         # Print Function
         print("D-CNV kernel matrix[0]: \n", self.kernel[0])
@@ -237,7 +299,9 @@ class CLASS_P_CONV:
         # Assign random filter value
         # for i in range(self.kernel_count):
         #     self.kernel[i] = np.random.randn(1)
-        self.kernel = np.ones((self.kernel_count, 64))
+        # self.kernel = np.random.randn(self.kernel_count, 64)
+        # self.kernel = np.reshape(random_C, [64, 64])
+        self.kernel = random_C
 
         # Print function
         print("P-CNV kernel matrix[0]: \n", self.kernel[0])
@@ -319,53 +383,11 @@ class CLASS_P_CONV:
         self.bias -= step_size * self.grad_bias
 
 
-class CLASS_AVG_POOLING:
-    # Forward pass is max(0,input)
-    def forward(self, input):
-        print("\n\n\n-----------AVG POOLING-----------")
-        # 5 x 25
-        input_avg_pool = np.zeros(64)
-        for i in range(input.shape[0]):
-            input_avg_pool[i] = (np.sum(input[i])/np.size(input[i]))
-
-        print("AVG POOLING: ", input_avg_pool)
-        return input_avg_pool
-    # Backward pass masks out same elements
-
-    def backward(self, grad):
-        return grad
-    # No parameters so nothing to do during a gradient descent step
-
-    def step(self, step_size):
-        return
-
-
-class CLASS_FULLY_CONNECTED:
-    def __init__(self):
-        self.kernel = np.random.rand(64, 12)
-        self.bias = np.random.rand(1, 12)
-    # Forward pass is max(0,input)
-
-    def forward(self, input):
-        self.input = input
-        # calculate 64 to 10
-        return np.dot(self.input, self.kernel) + self.bias
-    # Backward pass masks out same elements
-
-    def backward(self, grad):
-        return grad
-    # No parameters so nothing to do during a gradient descent step
-
-    def step(self, step_size):
-        return
-
-
 class CLASS_KWS_NETWORK:
     def __init__(self):
         self.layers = [CLASS_CONV()]
         self.layers.append(CLASS_ReLU())
         self.layers.append(CLASS_D_CONV())
-        self.layers.append(CLASS_ReLU())
         self.layers.append(CLASS_P_CONV())
         self.layers.append(CLASS_ReLU())
 
@@ -422,6 +444,23 @@ class CLASS_CrossEntropySoftmax:
         # Equation #18 first value
         return grad.astype(np.float64)/len(self.probs)
 
+def loadData():
+    wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float64)
+    wav_train = wav_file[:,:-1]    
+    print("wav_file shape:", wav_file.shape)    
+    print("wav_train shape:", wav_train.shape)
+
+    arr = []
+    label = []    
+    for line in wav_train:
+        wav_arr = np.array(line).reshape(10,49)        
+        arr.append(wav_arr)
+        label.append(line[[-1]])
+    print("wav_arr shape:", wav_arr.shape)
+    print("arr shape:", np.array(arr).shape)
+    print("label shape:", np.array(label).shape)
+
+    return arr, label
 
 if __name__ == "__main__":
     main()

@@ -41,6 +41,12 @@ def merge_matrix(wav_matrix):
         new_matrix.extend(k)
         # make a format as 490 x 1 x 1
         # export format in csv file (IMPORTANT:: format should to in line 490 x (number of files))
+    
+    
+    # this is for labelling answer sheet
+    x = np.array([1], dtype='f')
+    new_matrix.extend(x)
+    
     return new_matrix
 
 # get wav file from system OS
@@ -70,6 +76,10 @@ for f in files:
         # distinguish the answer through the file direction that from the system input
         final_matrix.append(merge_matrix(wav_matrix))
         print(np.shape(final_matrix))
+    
+    # final_matrix.extend("1")
 
 np.savetxt('wav_data_go.csv', final_matrix, delimiter=',') 
+
+
 # set matrix for import main python file

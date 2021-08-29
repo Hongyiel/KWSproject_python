@@ -474,10 +474,12 @@ def loadData():
 
     arr = []
     label = []    
+    for line in wav_file:
+        label.append(line[[-1]])
+    print("label\n", label)
     for line in wav_train:
         wav_arr = np.array(line).reshape(10,49)        
         arr.append(wav_arr)
-        label.append(line[[-1]])
     print("wav_arr shape:", wav_arr.shape)
     print("arr shape:", np.array(arr).shape)
     print("label shape:", np.array(label).shape)

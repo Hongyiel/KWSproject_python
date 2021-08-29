@@ -38,8 +38,8 @@ for f in files:
     
 df = pd.concat(frames)
 print(df)
-
-df.to_csv("data_set.csv")
+print(np.shape(df))
+df.to_csv("data_set_temp.csv")
 # merging the files
 # joined_files = os.path.join(path, "wav_data_*.csv")
 # # A list of all joined files is returned

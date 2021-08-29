@@ -2,6 +2,7 @@ import numpy as np
 import os.path
 import sys
 import librosa  # for audio related library using
+import csv
 
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
 # np.random.seed(102)
@@ -60,6 +61,7 @@ print('mfcc_librosa', mfcc_librosa.shape)
 
 def main():
     # TEST INPUT
+    wave_data, label = loadData()
     kws_network = CLASS_KWS_NETWORK()
     lossFunc = CLASS_CrossEntropySoftmax()
 
@@ -464,6 +466,23 @@ class CLASS_CrossEntropySoftmax:
         # Equation #18 first value
         return grad.astype(np.float64)/len(self.probs)
 
+def loadData():
+    wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float64)
+    wav_train = wav_file[:,:-1]    
+    print("wav_file shape:", wav_file.shape)    
+    print("wav_train shape:", wav_train.shape)
+
+    arr = []
+    label = []    
+    for line in wav_train:
+        wav_arr = np.array(line).reshape(10,49)        
+        arr.append(wav_arr)
+        label.append(line[[-1]])
+    print("wav_arr shape:", wav_arr.shape)
+    print("arr shape:", np.array(arr).shape)
+    print("label shape:", np.array(label).shape)
+
+    return arr, label
 
 if __name__ == "__main__":
     main()

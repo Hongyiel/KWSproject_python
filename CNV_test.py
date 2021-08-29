@@ -61,14 +61,13 @@ activation = "ReLU"
 
 def main():
     # TEST INPUT
-    wave_data, label = loadData()
+    wave_data = loadData()
     kws_network = CLASS_KWS_NETWORK()
     lossFunc = CLASS_CrossEntropySoftmax()
-
-    start_matrix = np.transpose(mfcc_librosa)
-
+    print("wave_data shape:", wave_data.shape)
+    # start_matrix = np.transpose(wave_data)
     # Compute the scores for our 10 classes using our model
-    result = kws_network.forward(start_matrix)
+    result = kws_network.forward(wave_data)
     # traindata = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     # loss = lossFunc.forward(result[0], traindata)
@@ -473,18 +472,14 @@ def loadData():
     print("wav_train shape:", wav_train.shape)
 
     arr = []
-    label = []    
-    for line in wav_file:
-        label.append(line[[-1]])
-    print("label\n", label)
     for line in wav_train:
         wav_arr = np.array(line).reshape(10,49)        
         arr.append(wav_arr)
+    arr = np.array(arr)
     print("wav_arr shape:", wav_arr.shape)
-    print("arr shape:", np.array(arr).shape)
-    print("label shape:", np.array(label).shape)
+    print("arr shape:", arr.shape)
 
-    return arr, label
+    return arr
 
 if __name__ == "__main__":
     main()

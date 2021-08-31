@@ -33,9 +33,26 @@ for f in files:
     # if key_word_constructor in "wav_data_up 8":
     # if key_word_constructor in "wav_data_yes 9":
     
-    # if +silence 11
-    # if unknown 12
     
+    #pre processing
+    # if +silence 11 # need to al 
+    # if unknown 12 # extra file , keyword extra keyword setting to unknown (how to give dataset )
+    # dtype 
+    # bit, one hot coding
+    # labeling = one hot coding (label insert ex.. 1 2 4 8 16 ... )
+    # common type, f type data flatten  (numpy flatten) 
+    # librosa is row x col
+    
+    # train data, validation data, test data
+    # should be each data
+    
+    # label slience unknown
+    # 읽어 들였을 땨 데이터의 ordering 과정
+    # row col ? col row ? 
+    # data loading 
+    
+    
+      
 df = pd.concat(frames)
 print(df)
 print(np.shape(df))

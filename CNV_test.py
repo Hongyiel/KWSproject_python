@@ -65,12 +65,18 @@ def main():
     wav_train = wav_file[:,:-1]
     print("wav_file shape:", wav_file.shape)    
     print("wav_train shape:", wav_train.shape)
-    
+
+
+    kws_network = CLASS_KWS_NETWORK()
+    lossFunc = CLASS_CrossEntropySoftmax()
+
+
     for line in wav_train:
-        wav_data = np.array(line).reshape(10,49)             
+        wav_data = np.array(line).reshape(10,49)
+        print(wav_data)         
         print("wav_data shape:", wav_data.shape)
-        kws_network = CLASS_KWS_NETWORK()
-        lossFunc = CLASS_CrossEntropySoftmax()    
+        
+        
         # start_matrix = np.transpose(wave_data)
         # Compute the scores for our 10 classes using our model
         result = kws_network.forward(wav_data)
@@ -86,7 +92,7 @@ def main():
         # # Take a step of gradient descent
         # kws_network.step(step_size)
 
-        print("\n\n\n-----------RESULT-----------")
+        print("-----------RESULT-----------")
         print("Result: \n", result)
 
 
@@ -108,12 +114,12 @@ class CLASS_CONV:
         self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
 
         # Print function
-        print("CNV kernel matrix[0]: \n", self.kernel[0])
+        # print("CNV kernel matrix[0]: \n", self.kernel[0])
 
         self.bias = np.ones((self.kernel_count, 1, 1))*0.5
 
     def forward(self, input):
-        print("\n\n\n-----------CNV-----------")
+        # print("\n\n\n-----------CNV-----------")
         # Padding applied
         self.input = np.pad(input, ((4, 5), (1, 1)),
                             'constant', constant_values=0)
@@ -156,9 +162,9 @@ class CLASS_CONV:
                             except:
                                 break
 
-        print("\nOutput matrix[0]: \n", output_matrix[0])
-        print("width: ", output_matrix[0].shape[1])
-        print("height: ", output_matrix[0].shape[0])
+        # print("\nOutput matrix[0]: \n", output_matrix[0])
+        # print("width: ", output_matrix[0].shape[1])
+        # print("height: ", output_matrix[0].shape[0])
         return output_matrix + self.bias
 
     def backward(self, grad):
@@ -197,12 +203,12 @@ class CLASS_D_CONV:
         self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
 
         # Print Function
-        print("D-CNV kernel matrix[0]: \n", self.kernel[0])
+        # print("D-CNV kernel matrix[0]: \n", self.kernel[0])
 
         self.bias = np.ones((self.kernel_count, 1, 1))*0.5
 
     def forward(self, input):
-        print("\n\n\n-----------D-CNV-----------")
+        # print("\n\n\n-----------D-CNV-----------")
         # Padding applied
         self.input = np.zeros((input.shape[0], 27, 7))
         for i in range(input.shape[0]):
@@ -210,9 +216,9 @@ class CLASS_D_CONV:
                 input[i], ((1, 1), (1, 1)), 'constant', constant_values=0)
 
         # Print function
-        print("Input matrix: \n", self.input[0])
-        print("width: ", self.input[0].shape[1])
-        print("height: ", self.input[0].shape[0])
+        # print("Input matrix: \n", self.input[0])
+        # print("width: ", self.input[0].shape[1])
+        # print("height: ", self.input[0].shape[0])
 
         # Input information
         input_width = self.input.shape[1]
@@ -247,9 +253,9 @@ class CLASS_D_CONV:
                             except:
                                 break
 
-        print("\nOutput matrix[0]: \n", output_matrix[0])
-        print("width: ", output_matrix[0].shape[1])
-        print("height: ", output_matrix[0].shape[0])
+        # print("\nOutput matrix[0]: \n", output_matrix[0])
+        # print("width: ", output_matrix[0].shape[1])
+        # print("height: ", output_matrix[0].shape[0])
         return output_matrix + self.bias
 
     def backward(self, grad):
@@ -286,21 +292,21 @@ class CLASS_P_CONV:
         self.kernel = np.random.randn(self.kernel_count, 64)
 
         # Print function
-        print("P-CNV kernel matrix[0]: \n", self.kernel[0])
+        # print("P-CNV kernel matrix[0]: \n", self.kernel[0])
 
         self.bias = np.ones((self.kernel_count, 1, 1))*0.5
 
     def forward(self, input):
-        print("\n\n\n-----------P-CNV-----------")
+        # print("\n\n\n-----------P-CNV-----------")
 
         self.input = np.zeros((input.shape[0], 25, 5))
         for i in range(input.shape[0]):
             self.input[i] = input[i]
 
         # Print function
-        print("Input matrix: \n", self.input[0])
-        print("width: ", self.input[0].shape[1])
-        print("height: ", self.input[0].shape[0])
+        # print("Input matrix: \n", self.input[0])
+        # print("width: ", self.input[0].shape[1])
+        # print("height: ", self.input[0].shape[0])
 
         # Input information
         input_width = self.input.shape[1]
@@ -343,9 +349,9 @@ class CLASS_P_CONV:
                             except:
                                 break
 
-        print("\nOutput matrix[0]: \n", output_matrix[0])
-        print("width: ", output_matrix[0].shape[1])
-        print("height: ", output_matrix[0].shape[0])
+        # print("\nOutput matrix[0]: \n", output_matrix[0])
+        # print("width: ", output_matrix[0].shape[1])
+        # print("height: ", output_matrix[0].shape[0])
         return output_matrix + self.bias
 
     def backward(self, grad):
@@ -368,13 +374,13 @@ class CLASS_P_CONV:
 class CLASS_AVG_POOLING:
     # Forward pass is max(0,input)
     def forward(self, input):
-        print("\n\n\n-----------AVG POOLING-----------")
+        # print("\n\n\n-----------AVG POOLING-----------")
         # 5 x 25
         input_avg_pool = np.zeros(64)
         for i in range(input.shape[0]):
             input_avg_pool[i] = (np.sum(input[i])/np.size(input[i]))
 
-        print("AVG POOLING: ", input_avg_pool)
+        # print("AVG POOLING: ", input_avg_pool)
         return input_avg_pool
     # Backward pass masks out same elements
 

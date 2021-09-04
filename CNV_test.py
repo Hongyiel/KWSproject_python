@@ -61,27 +61,33 @@ activation = "ReLU"
 
 def main():
     # TEST INPUT
-    wave_data = loadData()
-    kws_network = CLASS_KWS_NETWORK()
-    lossFunc = CLASS_CrossEntropySoftmax()
-    print("wave_data shape:", wave_data.shape)
-    # start_matrix = np.transpose(wave_data)
-    # Compute the scores for our 10 classes using our model
-    result = kws_network.forward(wave_data)
-    # traindata = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float32)
+    wav_train = wav_file[:,:-1]
+    print("wav_file shape:", wav_file.shape)    
+    print("wav_train shape:", wav_train.shape)
+    
+    for line in wav_train:
+        wav_data = np.array(line).reshape(10,49)             
+        print("wav_data shape:", wav_data.shape)
+        kws_network = CLASS_KWS_NETWORK()
+        lossFunc = CLASS_CrossEntropySoftmax()    
+        # start_matrix = np.transpose(wave_data)
+        # Compute the scores for our 10 classes using our model
+        result = kws_network.forward(wav_data)
+        # traindata = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    # loss = lossFunc.forward(result[0], traindata)
-    # # accuracy
-    # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
-    # # Compute gradient of Cross-Entropy Loss with respect to logits
-    # loss_grad = lossFunc.backward()
-    # # Pass gradient back through networks
-    # kws_network.backward(loss_grad)
-    # # Take a step of gradient descent
-    # kws_network.step(step_size)
+        # loss = lossFunc.forward(result[0], traindata)
+        # # accuracy
+        # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
+        # # Compute gradient of Cross-Entropy Loss with respect to logits
+        # loss_grad = lossFunc.backward()
+        # # Pass gradient back through networks
+        # kws_network.backward(loss_grad)
+        # # Take a step of gradient descent
+        # kws_network.step(step_size)
 
-    print("\n\n\n-----------RESULT-----------")
-    print("Result: \n", result)
+        print("\n\n\n-----------RESULT-----------")
+        print("Result: \n", result)
 
 
 class CLASS_CONV:
@@ -464,22 +470,6 @@ class CLASS_CrossEntropySoftmax:
 
         # Equation #18 first value
         return grad.astype(np.float64)/len(self.probs)
-
-def loadData():
-    wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float64)
-    wav_train = wav_file[:,:-1]    
-    print("wav_file shape:", wav_file.shape)    
-    print("wav_train shape:", wav_train.shape)
-
-    arr = []
-    for line in wav_train:
-        wav_arr = np.array(line).reshape(10,49)        
-        arr.append(wav_arr)
-    arr = np.array(arr)
-    print("wav_arr shape:", wav_arr.shape)
-    print("arr shape:", arr.shape)
-
-    return arr
 
 if __name__ == "__main__":
     main()

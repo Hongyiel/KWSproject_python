@@ -50,7 +50,7 @@ activation = "ReLU"
 # # mfcc_librosa is the data that consist of 49 x 10 matrix
 # print('mfcc_librosa', mfcc_librosa.shape)
 
-# # If data directory is "dog" then get 0 
+# # If data directory is "dog" then get 0
 # # If data directory is "cat" tjem get 1
 # # ...
 # # this is how the data set from training file(Answer sheet)
@@ -62,38 +62,40 @@ activation = "ReLU"
 def main():
     # TEST INPUT
     wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float32)
-    wav_train = wav_file[:,:-1]
-    print("wav_file shape:", wav_file.shape)    
+    wav_train = wav_file[:, :-1]
+    wav_label = wav_file[:, -1]
+    
+    print("wav_file shape:", wav_file.shape)
     print("wav_train shape:", wav_train.shape)
-
+    print("\n\n\n")
 
     kws_network = CLASS_KWS_NETWORK()
     lossFunc = CLASS_CrossEntropySoftmax()
 
+    for i in range(wav_train.shape[0]):
+        wav_data = np.array(wav_train[i]).reshape(10, 49)
+        print("wav_data:", wav_data[i])
+        print("wav_label: ", wav_label[i])
 
-    for line in wav_train:
-        wav_data = np.array(line).reshape(10,49)
-        print(wav_data)         
-        print("wav_data shape:", wav_data.shape)
-        
-        
-        # start_matrix = np.transpose(wave_data)
         # Compute the scores for our 10 classes using our model
         result = kws_network.forward(wav_data)
-        # traindata = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-        # loss = lossFunc.forward(result[0], traindata)
-        # # accuracy
-        # acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == traindata)
-        # # Compute gradient of Cross-Entropy Loss with respect to logits
-        # loss_grad = lossFunc.backward()
-        # # Pass gradient back through networks
-        # kws_network.backward(loss_grad)
-        # # Take a step of gradient descent
-        # kws_network.step(step_size)
-
-        print("-----------RESULT-----------")
+        print("-----------RESULT-----------")   
         print("Result: \n", result)
+
+        loss = lossFunc.forward(result, int(wav_label[0]))
+        # accuracy
+        acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == int(wav_label[0]))
+        # Compute gradient of Cross-Entropy Loss with respect to logits
+        loss_grad = lossFunc.backward()
+        print("loss grad: ", loss_grad)
+        # Pass gradient back through networks
+        kws_network.backward(loss_grad)
+        # Take a step of gradient descent
+        kws_network.step(step_size)
+
+        
+        print("\n\n\n")
 
 
 class CLASS_CONV:
@@ -111,7 +113,8 @@ class CLASS_CONV:
         # for i in range(self.kernel_count):
         #     self.kernel[i] = np.random.randn(
         #         self.kernel_height, self.kernel_width)
-        self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
+        self.kernel = np.random.randn(
+            self.kernel_count, self.kernel_height, self.kernel_width)
 
         # Print function
         # print("CNV kernel matrix[0]: \n", self.kernel[0])
@@ -200,7 +203,8 @@ class CLASS_D_CONV:
         #     self.kernel[i] = np.random.randn(
         #         self.kernel_height, self.kernel_width)
 
-        self.kernel = np.random.randn(self.kernel_count, self.kernel_height, self.kernel_width)
+        self.kernel = np.random.randn(
+            self.kernel_count, self.kernel_height, self.kernel_width)
 
         # Print Function
         # print("D-CNV kernel matrix[0]: \n", self.kernel[0])
@@ -417,10 +421,10 @@ class CLASS_KWS_NETWORK:
         self.layers = [CLASS_CONV()]
         self.layers.append(CLASS_ReLU())
         for i in range(number_of_hidden_layers):
-          self.layers.append(CLASS_D_CONV())
-          self.layers.append(CLASS_ReLU())
-          self.layers.append(CLASS_P_CONV())
-          self.layers.append(CLASS_ReLU())
+            self.layers.append(CLASS_D_CONV())
+            self.layers.append(CLASS_ReLU())
+            self.layers.append(CLASS_P_CONV())
+            self.layers.append(CLASS_ReLU())
         self.layers.append(CLASS_AVG_POOLING())
         self.layers.append(CLASS_FULLY_CONNECTED())
 
@@ -448,6 +452,8 @@ class CLASS_ReLU:
     # Backward pass masks out same elements
 
     def backward(self, grad):
+        print("\nRelu passed grad: ", grad)
+        print("  Relu self mask: ", self.mask)
         return grad * self.mask
     # No parameters so nothing to do during a gradient descent step
 
@@ -476,6 +482,7 @@ class CLASS_CrossEntropySoftmax:
 
         # Equation #18 first value
         return grad.astype(np.float64)/len(self.probs)
+
 
 if __name__ == "__main__":
     main()

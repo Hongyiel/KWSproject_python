@@ -92,9 +92,9 @@ def main():
         print("-----------RESULT-----------")   
         print("Result: \n", result)
 
-        loss = lossFunc.forward(result, int(wav_label[0]))
+        loss = lossFunc.forward(result, int(wav_label[i]))
         # accuracy
-        acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == int(wav_label[0]))
+        acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == int(wav_label[i]))
         # Compute gradient of Cross-Entropy Loss with respect to logits
         loss_grad = lossFunc.backward()
         print("loss grad: ", loss_grad)
@@ -393,7 +393,7 @@ class CLASS_AVG_POOLING:
         for i in range(input.shape[0]):
             input_avg_pool[i] = (np.sum(input[i])/np.size(input[i]))
 
-        # print("AVG POOLING: ", input_avg_pool)
+        print("AVG POOLING: ", input_avg_pool)
         return input_avg_pool
     # Backward pass masks out same elements
 

@@ -371,6 +371,8 @@ class CLASS_P_CONV:
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
         #                          where (d_output/d_input) = wT
         #
+        # grad dimension (64 x 25 x 5)
+        # kernel dimension (64 x 64)
         grad_input = grad@np.transpose(self.kernel)
         # compute gradient w.r.t. weights and biases
         # dL/dW = (input)T * (dL/d_Z)
@@ -398,7 +400,14 @@ class CLASS_AVG_POOLING:
     # Backward pass masks out same elements
 
     def backward(self, grad):
-        return grad
+        # grad size 
+        # Resize grad dimension (1 x 64) -> (64 x 25 x 5)
+        input_grad = np.zeros((64, 25, 5))
+        for i in range(grad.shape[1]):
+            matrix = np.ones((25, 5)) * grad[0][i]
+            input_grad[i] = matrix
+        # input grad dimension  (64 x 25 x 5)
+        return input_grad
     # No parameters so nothing to do during a gradient descent step
 
     def step(self, step_size):
@@ -407,22 +416,36 @@ class CLASS_AVG_POOLING:
 
 class CLASS_FULLY_CONNECTED:
     def __init__(self):
+        # Kernel size (64 x 12)
         self.kernel = np.random.rand(64, 12)
         self.bias = np.random.rand(1, 12)
     # Forward pass is max(0,input)
 
     def forward(self, input):
-        self.input = input
+        # input dimenstion (1 x 64)
+        self.input = input.reshape((1, 64))
         # calculate 64 to 10
         return np.dot(self.input, self.kernel) + self.bias
-    # Backward pass masks out same elements
 
+    # Backward pass masks out same elements
     def backward(self, grad):
-        return grad
-    # No parameters so nothing to do during a gradient descent step
+        #   dL/d_input = (dL/d_output) * (d_output/d_input)
+        #                          where (d_output/d_input) = wT
+        #
+        grad_input = grad@np.transpose(self.kernel)
+        # compute gradient w.r.t. weights and biases
+        # dL/dW = (input)T * (dL/d_Z)
+        # dL/dB = Sum of (dL/dZ)
+        # grad dimension: (1 x 12)
+        # input dimension (1 x 64)T -> (64 x 1)
+        self.grad_weights = np.transpose(self.input)@grad
+        self.grad_bias = np.sum(grad, axis=0)
+        # grad_input dimension 1 x 64
+        return grad_input
 
     def step(self, step_size):
-        return
+        self.kernel -= step_size * self.grad_weights
+        self.bias -= step_size * self.grad_bias
 
 
 class CLASS_KWS_NETWORK:
@@ -461,8 +484,8 @@ class CLASS_ReLU:
     # Backward pass masks out same elements
 
     def backward(self, grad):
-        print("\nRelu passed grad: ", grad)
-        print("  Relu self mask: ", self.mask)
+        # print("\nRelu passed grad: ", grad)
+        # print("  Relu self mask: ", self.mask)
         return grad * self.mask
     # No parameters so nothing to do during a gradient descent step
 

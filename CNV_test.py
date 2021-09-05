@@ -65,6 +65,15 @@ def main():
     wav_train = wav_file[:, :-1]
     wav_label = wav_file[:, -1]
     
+    shuffle = np.random.permutation(len(wav_label))
+
+    wav_train = wav_train[shuffle]
+    wav_label = wav_label[shuffle]
+
+    print("wav_train:\n", wav_train)
+    print("wav_label:\n", wav_label)
+
+    
     print("wav_file shape:", wav_file.shape)
     print("wav_train shape:", wav_train.shape)
     print("\n\n\n")

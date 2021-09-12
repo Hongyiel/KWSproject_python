@@ -61,7 +61,7 @@ activation = "ReLU"
 
 def main():
     # TEST INPUT
-    wav_file = np.loadtxt("00.wav_data.csv", delimiter=",", dtype=np.float32)
+    wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float32)
     ## wav_file = np.transpose(wav_49x10)
     wav_train = wav_file[:, :-1]
     wav_label = wav_file[:, -1]
@@ -376,7 +376,7 @@ class CLASS_P_CONV:
         # Print function
         # print("P-CNV kernel matrix[0]: \n", self.kernel[0])
 
-        self.bias = np.ones((self.KN, 1, 1))*0.5
+        self.bias = np.ones((self.ON, 1, 1))*0.5
 
     def forward(self, input):
         # print("\n\n\n-----------Point wise Conv-----------")
@@ -497,24 +497,27 @@ class CLASS_FULLY_CONNECTED:
 
         self.KN = IN*ON
 
-        self.kernel = np.random.randn(IN, ON)
-        self.bias = np.random.rand(1, ON)
+        self.kernel = np.random.randn(self.IN, self.ON)
+        self.bias = np.random.rand(self.ON, 1)        #change to array shape 
     # Forward pass is max(0,input)
 
     def forward(self, input):
-        # INPUT dimension (1 x 64)
         self.input = input.reshape((1, 64))
+        # INPUT dimension (1 x 64)
+        # INPUT T dimension (64 x 1)
         # KERNEL dimension (64 x 12)
-        # OUTPUT dimension (1x12)
-        return np.dot(self.input, self.kernel) + self.bias
+        # OUTPUT dimension (12 x 1) --> Transpose here 
+        return np.dot(self.input, self.kernel) + np.transpose(self.bias)
 
     # Backward pass masks out same elements
     def backward(self, grad):
+        grad_bias = np.zeros(self.bias.shape)
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
         #                          where (d_output/d_input) = wT
-        #
+        
         # grad_input dimension 1 x 64
         # kernel dimension 64 x 12
+        # kernel Transpose dimension 12 x 64
         # grad dimension 1 x 12
         grad_input = grad@np.transpose(self.kernel)
         # compute gradient w.r.t. weights and biases
@@ -525,7 +528,13 @@ class CLASS_FULLY_CONNECTED:
         # print("FC self.input[]: ", self.input.shape)
         # print("FC grad[]: ", grad.shape)
         self.grad_weights = np.transpose(self.input)@grad
-        self.grad_bias = np.sum(grad, axis=0)
+
+        for M in range(self.ON):
+            grad_bias[M] = np.average(grad)
+        # self.grad_bias = np.sum(grad, axis=0)
+        
+        self.grad_bias = grad_bias
+
         return grad_input
 
     def step(self, step_size):

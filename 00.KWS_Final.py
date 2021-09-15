@@ -7,7 +7,7 @@ import csv
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
 # np.random.seed(102)
 step_size = 0.001
-batch_size = 10000
+batch_size = 3
 max_epochs = 1000
 np.set_printoptions(precision=3)
 
@@ -82,21 +82,32 @@ def main():
     kws_network = CLASS_KWS_NETWORK()
     lossFunc = CLASS_CrossEntropySoftmax()
 
-    for i in range(wav_train.shape[0]):
-        wav_data = np.array(wav_train[i]).reshape(49,10)
-        #woon wav_data = np.array(wav_train[i]).reshape(10,49)
-        print("wav_data:", wav_data[i])
-        print("wav_label: ", wav_label[i])
+    # Add for loop for epoch later here 
+    
+    index = 0
+
+    while(index < wav_train.shape[0]):
+        if index + batch_size > wav_train.shape[0]:
+            end = index + (wav_train % batch_size) - 1
+        else:
+            end = index + batch_size - 1
+        x_train = wav_train[index : end]
+        x_train = x_train.reshape(batch_size, 49, 10)
+        y_train = int(wav_label[index : end])
+        index += batch_size
+            
+        print("x_train:", x_train)
+        print("y_train: ", y_train)
 
         # Compute the scores for our 10 classes using our model
-        result = kws_network.forward(wav_data)
+        result = kws_network.forward(x_train)
 
         print("-----------RESULT-----------")   
         print("Result: \n", result)
 
-        loss = lossFunc.forward(result, int(wav_label[i]))
+        loss = lossFunc.forward(result, y_train)
         # accuracy
-        acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == int(wav_label[i]))
+        acc = np.mean(np.argmax(result, axis=1)[:, np.newaxis] == y_train)
         # Compute gradient of Cross-Entropy Loss with respect to logits
         loss_grad = lossFunc.backward()
         print("loss grad: ", loss_grad)

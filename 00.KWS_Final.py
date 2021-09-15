@@ -16,7 +16,7 @@ np.set_printoptions(precision=3)
 # layer 2~5:  6x25x64 --> dw_conv 3x3/1, pw_conv 1x1/1  --> 6x25x64
 # layer 6:   6x25x64 --> grand average                 --> 1x1x64
 # output:     1x1x64  --> fully_connected               --> 1x1x10
-number_of_hidden_layers = 4
+number_of_hidden_layers = 1
 number_of_hidden_lnodes = 64  # only for layer > 1
 activation = "ReLU"
 
@@ -89,12 +89,15 @@ def main():
 
     while(index < wav_train.shape[0]):
         if index + batch_size > wav_train.shape[0]:
-            end = index + (wav_train % batch_size) - 1
+            end = index + (wav_train % batch_size)
         else:
-            end = index + batch_size - 1
+            end = index + batch_size
+        print("this is end: ", end)
+        print("This is index: ", index)
         x_train = wav_train[index : end]
+        
         x_train = x_train.reshape(batch_size, 49, 10)
-        y_train = int(wav_label[index : end])
+        y_train = wav_label[index : end]
         index += batch_size
             
         print("x_train:", x_train)
@@ -156,9 +159,12 @@ class CLASS_CONV:
     def forward(self, input):
         self.input = input
         # print("\n\n\n-----------CNV-----------")
-        # 3D case: padded_input = np.pad(input, ( (0,0), (self.PHu, self.PHd), (self.PWl, self.PWr) ),
-        padded_input = np.pad(input, ( (self.PHu, self.PHd), (self.PWl, self.PWr) ),
-                            'constant', constant_values=0)
+        # for B in range(batch_size):
+        #     padded_input = np.pad(input, ( (0,0), (self.PHu, self.PHd), (self.PWl, self.PWr) ))
+        #     # print("This is paddddddddd: ", padded_input)
+        #     # padded_input = np.pad(input, ( (self.PHu, self.PHd), (self.PWl, self.PWr) ),
+        #     #                     'constant', constant_values=0)
+        padded_input = np.pad(input, ( (0,0), (self.PHu, self.PHd), (self.PWl, self.PWr) ))
 
         # print("+++++++++++++++++++++++++++++++++++++++++")
         # print(padded_input)
@@ -174,7 +180,7 @@ class CLASS_CONV:
         # print("CONV n_H: ",n_H)
         # print("CONV n_W: ",n_W)
         # print("CONV self.ON: ",self.ON)
-        output = np.zeros((self.ON, OH, OW))
+        output = np.zeros((batch_size,self.ON, OH, OW))
         # Iterate through image
         # output numbers : ON
         for B in range(batch_size):
@@ -182,7 +188,7 @@ class CLASS_CONV:
                 # for N in range(self.IN):
                 for r in range(0,n_H,S):
                     for c in range(0,n_W,S):
-                        output[M,r//S,c//S] = np.sum(padded_input[r:r+self.KH,c:c+self.KW] * self.kernel[M,:,:]) + self.bias[M]
+                        output[B,M,r//S,c//S] = np.sum(padded_input[B,r:r+self.KH,c:c+self.KW] * self.kernel[M,:,:]) + self.bias[M]
                     #print("#######################################")
                     #print(padded_input[r:r+self.KH,c:c+self.KW])
                     #print(self.kernel[M,:,:])
@@ -291,20 +297,21 @@ class CLASS_D_CONV:
     def forward(self, input):
         # print("\n\n\n-----------Depth wise Conv-----------")
         self.input = input
-        padded_input = np.pad(input, ( (0,0), (self.PHu, self.PHd), (self.PWl, self.PWr) ),
+        
+        padded_input = np.pad(input, ( (0,0), (0,0), (self.PHu, self.PHd), (self.PWl, self.PWr) ),
                             'constant', constant_values=0)
         # Input information
         OH = 1 + (self.IH + self.PHu + self.PHd - self.KH)//self.ST
         OW = 1 + (self.IW + self.PWl + self.PWr - self.KW)//self.ST
         S = self.ST
-        output = np.zeros((self.ON, OH, OW))
+        output = np.zeros((batch_size,self.ON, OH, OW))
         # for batch operation, it need to add one more dimension in the loop
         # Iterate through image
         for B in range(batch_size):
             for D in range(self.IN):
                 for r in range(0,self.IH,S):
                     for c in range(0,self.IW,S):
-                        output[D,r//S,c//S] = np.sum(padded_input[D,r:r+self.KH,c:c+self.KW] * self.kernel[D,:,:]) + self.bias[D]
+                        output[B,D,r//S,c//S] = np.sum(padded_input[B,D,r:r+self.KH,c:c+self.KW] * self.kernel[D,:,:]) + self.bias[D]
                         # print("#######################################")
                         # print(padded_input[D,r:r+self.KH,c:c+self.KW])
                         # print(self.kernel[D,:,:])
@@ -403,7 +410,7 @@ class CLASS_P_CONV:
         self.input = input
         OH = self.IH
         OW = self.IW
-        output = np.zeros((self.ON, OH, OW))
+        output = np.zeros((batch_size,self.ON, OH, OW))
         # for batch operation, it need to add one more dimension in the loop
         # Iterate through image
         # print("ON: ", self.ON)
@@ -426,7 +433,7 @@ class CLASS_P_CONV:
                             # print(self.bias[M])
                             # print(output[M,r,c])
                             # print("#######################################")
-                            output[M,r,c] += np.sum(self.input[N,r,c] * self.kernel[M,N]) + self.bias[M]
+                            output[B,M,r,c] += np.sum(self.input[B,N,r,c] * self.kernel[M,N]) + self.bias[M]
         #print("forward output at Point wise CONV:", output)
         return output
 
@@ -483,11 +490,11 @@ class CLASS_AVG_POOLING:
     # Forward pass 
     def forward(self, input):
         # print("\n\n\n-----------AVG POOLING-----------")
-        output = np.zeros(self.ON) # 1x1xON
+        output = np.zeros((batch_size,self.ON)) # 1x1xON
         for B in range(batch_size):
             for i in range(input.shape[0]):
-                data = input[i].reshape((1,self.IH*self.IW))
-                output[i] = np.average(data)
+                data = input[B,i].reshape((1,self.IH*self.IW))
+                output[B,i] = np.average(data)
             # print("AVG POOLING:[i] ", output[i])
         # print("AVG POOLING all ", output)
         return output

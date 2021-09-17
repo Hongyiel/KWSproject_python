@@ -44,7 +44,7 @@ def merge_matrix(wav_matrix):
     
     
     # this is for labelling answer sheet
-    x = np.array([6], dtype='f')
+    x = np.array([6.0], dtype='f')
     new_matrix.extend(x)
     
     return new_matrix

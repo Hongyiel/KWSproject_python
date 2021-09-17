@@ -41,7 +41,7 @@ def merge_matrix(wav_matrix):
         new_matrix.extend(k)
         # make a format as 490 x 1 x 1
         # export format in csv file (IMPORTANT:: format should to in line 490 x (number of files))
-    x = np.array([4], dtype='f')
+    x = np.array([4.0], dtype='f')
     new_matrix.extend(x)    
     return new_matrix
 

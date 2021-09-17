@@ -32,6 +32,8 @@ for f in files:
     # if key_word_constructor in "wav_data_stop 7" :
     # if key_word_constructor in "wav_data_up 8":
     # if key_word_constructor in "wav_data_yes 9":
+    # if key_word im wav_data_slience 0.0
+    # if key_word in wav_data_unknown_ 11.0
     
     
     #pre processing

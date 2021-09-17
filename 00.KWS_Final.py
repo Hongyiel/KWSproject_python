@@ -7,6 +7,7 @@ import csv
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
 # np.random.seed(102)
 step_size = 0.001
+global batch_size
 batch_size = 3
 max_epochs = 1000
 np.set_printoptions(precision=3)
@@ -57,9 +58,11 @@ activation = "ReLU"
 
 
 # ##########################################################
+constant_batch_size = 3
 
 
 def main():
+    
     # TEST INPUT
     wav_file = np.loadtxt("wav_data.csv", delimiter=",", dtype=np.float32)
     ## wav_file = np.transpose(wav_49x10)
@@ -88,20 +91,22 @@ def main():
     index = 0
 
     while(index < wav_train.shape[0]):
-        if index + batch_size > wav_train.shape[0]:
-            end = index + (wav_train % batch_size)
+        if index + constant_batch_size > wav_train.shape[0]:
+            end = index + (wav_train.shape[0] % constant_batch_size)
         else:
-            end = index + batch_size
+            end = index + constant_batch_size
         print("this is end: ", end)
         print("This is index: ", index)
         x_train = wav_train[index : end]
         
-        x_train = x_train.reshape(batch_size, 49, 10)
+        
+        x_train = x_train.reshape(end - index, 49, 10)
         y_train = wav_label[index : end]
-        index += batch_size
-            
-        print("x_train:", x_train)
-        print("y_train: ", y_train)
+        index += constant_batch_size
+        batch_size = end - index
+        # print("batch_size ", batch_size)
+        # print("x_train:", x_train)
+        # print("y_train: ", y_train)
 
         # Compute the scores for our 10 classes using our model
         result = kws_network.forward(x_train)
@@ -213,7 +218,7 @@ class CLASS_CONV:
         OW = 1 + (self.IW + self.PWl + self.PWr - self.KW)//self.ST
         S = self.ST
         #IN 49x10 
-        padded_input = np.pad(self.input, ( (self.PHu, self.PHd), (self.PWl, self.PWr)),'constant', constant_values=0)
+        padded_input = np.pad(self.input, ( (0,0),(self.PHu, self.PHd), (self.PWl, self.PWr)),'constant', constant_values=0)
         dx = np.zeros(padded_input.shape)
         grad_weights = np.zeros(self.kernel.shape)
         grad_bias = np.zeros(self.bias.shape)
@@ -236,11 +241,11 @@ class CLASS_CONV:
                         # print("grad: ", grad[M,r//S,c//S])
                         # print("kernel:", self.kernel[M,:,:])
                         # print("#######################################")
-                        dx[r:r+self.KH,c:c+self.KW] += grad[M,r//S,c//S] * self.kernel[M,:,:]
-            delete_rows = range(self.PHu+self.PHd)
-            delete_colm = range(self.PWl+self.PWr)
-            dx         = np.delete(dx, delete_rows, axis=0) # ? woon
-            grad_input = np.delete(dx, delete_colm, axis=1) # ? woon
+                        dx[B,r:r+self.KH,c:c+self.KW] += grad[B,M,r//S,c//S] * self.kernel[M,:,:]
+        delete_rows = range(self.PHu+self.PHd)
+        delete_colm = range(self.PWl+self.PWr)
+        dx         = np.delete(dx, delete_rows, axis=1) # ? woon
+        grad_input = np.delete(dx, delete_colm, axis=2) # ? woon
         # compute gradient w.r.t. weights and biases
         # dL/dW = (input)T * (dL/d_Z)
         # dL/dB = Sum of (dL/dZ)
@@ -249,10 +254,10 @@ class CLASS_CONV:
             for M in range(self.ON):
                 for r in range(OH):
                     for c in range(OW):
-                        grad_weights[M,:,:] += grad[M, r, c] * padded_input[r*S:r*S+self.KH,c*S:c*S+self.KW]
+                        grad_weights[M,:,:] += grad[B,M, r, c] * padded_input[B,r*S:r*S+self.KH,c*S:c*S+self.KW]
         for B in range(batch_size):
             for M in range(self.ON):
-                grad_bias[M] = np.sum(grad[M,:,:])
+                grad_bias[M] = np.sum(grad[B,M,:,:])
 
             self.grad_weights = grad_weights
             self.grad_bias = grad_bias
@@ -347,22 +352,27 @@ class CLASS_D_CONV:
         #
         #grad_input = grad@np.transpose(self.kernel)
         # for batch operation, it need to add one more dimension in the loop
+        
         for B in range(batch_size):
             for D in range(self.ON): # number of Feature of INPUT
                 for r in range(0,self.IH,S): # width of each feature
                     for c in range(0,self.IW,S):
+                        # print("c: ", c)
+                        
                         dx[B,D,r:r+self.KH,c:c+self.KW] += grad[B,D,r//S,c//S] * self.kernel[D,:,:]
+                        
+              
                         # print("dx---------------------------------------- :\n",dx[B,D,r:r+self.KH,c:c+self.KW])
-            # print("dx: ",dx.shape)
-            delete_rows = range(self.PHu+self.PHd)
-            delete_colm = range(self.PWl+self.PWr)
-            dx         = np.delete(dx, delete_rows, axis=1) # ? woon
-            grad_input = np.delete(dx, delete_colm, axis=2) # ? woon
-            # print("grad_input: ",grad_input.shape)
-            # compute gradient w.r.t. weights and biases
-            # dL/dW = (input)T * (dL/d_Z)
-            # dL/dB = Sum of (dL/dZ)
-            # self.grad_weights = np.transpose(self.input)@grad
+                # print("dx: ",dx.shape)
+        delete_rows = range(self.PHu+self.PHd)
+        delete_colm = range(self.PWl+self.PWr)
+        dx         = np.delete(dx, delete_rows, axis=2) # ? woon
+        grad_input = np.delete(dx, delete_colm, axis=3) # ? woon
+                # print("grad_input: ",grad_input.shape)
+                # compute gradient w.r.t. weights and biases
+                # dL/dW = (input)T * (dL/d_Z)
+                # dL/dB = Sum of (dL/dZ)
+                # self.grad_weights = np.transpose(self.input)@grad
         for B in range(batch_size):
             for D in range(self.ON):
                 for r in range(OH):
@@ -560,14 +570,18 @@ class CLASS_FULLY_CONNECTED:
         # grad dimension: (1 x 12)
         # print("FC self.input[]: ", self.input.shape)
         # print("FC grad[]: ", grad.shape)
-        self.grad_weights = np.transpose(self.input)@grad
+        self.grad_weights = (np.transpose(self.input)@grad).reshape(64,12)
         
         # for B in range(batch_size):
         for M in range(self.ON):
             grad_bias[M] = np.average(grad)
+            print("npnp.average(grad): ",np.average(grad))
         # self.grad_bias = np.sum(grad, axis=0)
-        
+        print("self.grad_weight: ", np.shape(self.grad_weights))
         self.grad_bias = grad_bias
+        
+        print("self.input: ", np.shape(self.input))
+        print("grad: ", np.shape(grad))
 
         return grad_input
 

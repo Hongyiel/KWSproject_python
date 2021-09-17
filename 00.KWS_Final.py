@@ -536,7 +536,7 @@ class CLASS_FULLY_CONNECTED:
         # INPUT T dimension (64 x 1)
         # KERNEL dimension (64 x 12)
         # OUTPUT dimension (12 x 1) --> Transpose here 
-        return np.dot(self.input, self.kernel) + np.transpose(self.bias)
+        return (np.dot(self.input, self.kernel) + np.transpose(self.bias)).reshape((batch_size, 12))
 
     # Backward pass masks out same elements
     def backward(self, grad):
@@ -633,7 +633,9 @@ class CLASS_CrossEntropySoftmax:
     def forward(self, logits, labels):
         self.probs = softmax(logits)
         self.labels = labels
-        return -np.mean(np.log(self.probs[np.arange(len(self.probs))[:, np.newaxis], labels]+0.00001))
+
+        return -np.mean(np.log(self.probs[np.arange(len(self.probs))[:, np.newaxis], labels.astype(int)]+0.00001))
+
 
     def backward(self):
         grad = self.probs

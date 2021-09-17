@@ -632,9 +632,9 @@ class CLASS_CrossEntropySoftmax:
 
     def forward(self, logits, labels):
         self.probs = softmax(logits)
-        self.labels = labels
+        self.labels = labels.astype(int)
 
-        return -np.mean(np.log(self.probs[np.arange(len(self.probs))[:, np.newaxis], labels.astype(int)]+0.00001))
+        return -np.mean(np.log(self.probs[np.arange(len(self.probs))[:, np.newaxis], self.labels]+0.00001))
 
 
     def backward(self):

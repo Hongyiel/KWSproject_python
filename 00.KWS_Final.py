@@ -336,8 +336,10 @@ class CLASS_D_CONV:
         OH = 1 + (self.IH + self.PHu + self.PHd - self.KH)//self.ST
         OW = 1 + (self.IW + self.PWl + self.PWr - self.KW)//self.ST
         S = self.ST
-        padded_input = np.pad(self.input, ((0,0), (self.PHu, self.PHd), (self.PWl, self.PWr)),'constant', constant_values=0)
+        padded_input = np.pad(self.input, ((0,0),(0,0), (self.PHu, self.PHd), (self.PWl, self.PWr)),'constant', constant_values=0)
+        print("padddedmidjeijd:: ", np.shape(padded_input))
         dx = np.zeros(padded_input.shape)
+        print("grad shape: ",np.shape(grad))
         grad_weights = np.zeros(self.kernel.shape)
         grad_bias = np.zeros(self.bias.shape)
         #   dL/d_input = (dL/d_output) * (d_output/d_input)
@@ -349,7 +351,8 @@ class CLASS_D_CONV:
             for D in range(self.ON): # number of Feature of INPUT
                 for r in range(0,self.IH,S): # width of each feature
                     for c in range(0,self.IW,S):
-                        dx[D,r:r+self.KH,c:c+self.KW] += grad[D,r//S,c//S] * self.kernel[D,:,:]
+                        dx[B,D,r:r+self.KH,c:c+self.KW] += grad[B,D,r//S,c//S] * self.kernel[D,:,:]
+                        # print("dx---------------------------------------- :\n",dx[B,D,r:r+self.KH,c:c+self.KW])
             # print("dx: ",dx.shape)
             delete_rows = range(self.PHu+self.PHd)
             delete_colm = range(self.PWl+self.PWr)
@@ -364,10 +367,10 @@ class CLASS_D_CONV:
             for D in range(self.ON):
                 for r in range(OH):
                     for c in range(OW):
-                        grad_weights[D,:,:] += grad[D, r, c] * padded_input[D,r*S:r*S+self.KH,c*S:c*S+self.KW]
+                        grad_weights[D,:,:] += grad[B,D, r, c] * padded_input[B,D,r*S:r*S+self.KH,c*S:c*S+self.KW]
         for B in range(batch_size):
             for D in range(self.ON):
-                grad_bias[D] = np.sum(grad[D,:,:])
+                grad_bias[D] = np.sum(grad[B,D,:,:])
 
             self.grad_weights = grad_weights
             self.grad_bias = grad_bias
@@ -454,7 +457,7 @@ class CLASS_P_CONV:
                 for N in range(self.IN): #
                     for r in range(0,self.IH): # 
                         for c in range(0,self.IW):
-                            dx[N,r,c] += grad[M,r,c] * self.kernel[M,N]
+                            dx[B,N,r,c] += grad[B,M,r,c] * self.kernel[M,N]
         grad_input = dx
         # compute gradient w.r.t. weights and biases
         # dL/dW = (input)T * (dL/d_Z)
@@ -465,10 +468,10 @@ class CLASS_P_CONV:
                 for N in range(self.IN):
                     for r in range(OH):
                         for c in range(OW):
-                            grad_weights[M,N] += grad[M, r, c] * self.input[N,r,c]
+                            grad_weights[M,N] += grad[B,M, r, c] * self.input[B,N,r,c]
         for B in range(batch_size):
             for M in range(self.ON):
-                grad_bias[M] = np.sum(grad[M,:,:])
+                grad_bias[M] = np.sum(grad[B,M,:,:])
 
         self.grad_weights = grad_weights
         self.grad_bias = grad_bias
@@ -504,11 +507,11 @@ class CLASS_AVG_POOLING:
     def backward(self, grad):
         # grad size 
         # Resize grad dimension (1 x 64) -> (64 x 25 x 5)
-        input_grad = np.zeros((self.IN, self.IH, self.IW))
+        input_grad = np.zeros((batch_size,self.IN, self.IH, self.IW))
         for B in range(batch_size):
             for i in range(grad.shape[1]):
-                matrix = np.ones((self.IH, self.IW)) * (grad[0][i]/(self.IH*self.IW))
-                input_grad[i] = matrix
+                matrix = np.ones((self.IH, self.IW)) * (grad[B][i]/(self.IH*self.IW))
+                input_grad[B,i] = matrix
         # input grad dimension  (64 x 25 x 5)
         # print("input_grad backward return:", input_grad.shape)
         return input_grad
@@ -559,9 +562,9 @@ class CLASS_FULLY_CONNECTED:
         # print("FC grad[]: ", grad.shape)
         self.grad_weights = np.transpose(self.input)@grad
         
-        for B in range(batch_size):
-            for M in range(self.ON):
-                grad_bias[M] = np.average(grad)
+        # for B in range(batch_size):
+        for M in range(self.ON):
+            grad_bias[M] = np.average(grad)
         # self.grad_bias = np.sum(grad, axis=0)
         
         self.grad_bias = grad_bias

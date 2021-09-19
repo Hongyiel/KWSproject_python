@@ -18,3 +18,6 @@ Link that found
     - pip install pandas
 
 ** Please use csv files after extract from speech data 
+
+# Until Batch (completed)
+# This code made by python in for loop (for understand how to running CNN, p-convolution, d-convolution, Fully-connected)
